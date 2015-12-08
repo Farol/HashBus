@@ -124,23 +124,26 @@
                     ColorConsole.WriteLine(new ColorToken[] { padding }.Concat(line).ToArray());
                 }
 
-                ColorConsole.WriteLine(
-                    padding,
-                    $"Total {itemsName}:".Gray(),
-                    " ",
-                    $"{currentLeaderboard?.Count ?? 0:N0}"
-                        .Color(currentLeaderboard?.Count - previousLeaderboard?.Count > 0 ? movementColors[-1] : movementColors[0]),
-                    $" since ".Gray(),
-                    $"{currentLeaderboard.Since?.ToLocalTime().ToString() ?? ("started")}".Gray());
+                if (currentLeaderboard.Since != null)
+                {
+                    ColorConsole.WriteLine(
+                        padding,
+                        $"{currentLeaderboard.Since?.ToLocalTime().ToString()} to {currentLeaderboard.LastActivityDateTime?.ToLocalTime().ToString()}".Gray());
+                }
 
                 var maxMessageLength = 0;
                 var refreshTime = DateTime.UtcNow.AddMilliseconds(refreshInterval);
                 using (var timer = new Timer(c =>
                 {
-                    var timeLeft = new TimeSpan(0, 0, 0, (int)Math.Round((refreshTime - DateTime.UtcNow).TotalSeconds));
-                    var message = $"\r{padding}{DateTime.UtcNow.ToLocalTime()} · Refreshing in {timeLeft.Humanize()}...";
-                    maxMessageLength = Math.Max(maxMessageLength, message.Length);
-                    ColorConsole.Write(message.PadRight(maxMessageLength).DarkGray());
+                    var timeLeft = new TimeSpan(0, 0, 0, (int) Math.Round((refreshTime - DateTime.UtcNow).TotalSeconds));
+                    var totalMessage = $"Total {itemsName}: ";
+                    var totalValueMessage = $"{currentLeaderboard?.Count ?? 0:N0}"; 
+                    var refreshingMessage = $" · Refreshing in {timeLeft.Humanize()}...";
+                    maxMessageLength = Math.Max(maxMessageLength, totalMessage.Length + totalValueMessage.Length + refreshingMessage.Length - padding.Length);
+                    ColorConsole.Write("\r", padding, 
+                        totalMessage.DarkGray(), 
+                        totalValueMessage.Color(currentLeaderboard?.Count - previousLeaderboard?.Count > 0 ? movementColors[-1] : movementColors[0]), 
+                        refreshingMessage.PadRight(maxMessageLength).DarkGray());
                 }))
                 {
                     timer.Change(0, 1000);
