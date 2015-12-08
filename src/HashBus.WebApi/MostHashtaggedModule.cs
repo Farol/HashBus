@@ -36,6 +36,7 @@
                     Entries = entries,
                     Count = trackHashtags.Count,
                     Since = trackHashtags.Min(hashtag => hashtag.HashtaggedAt),
+                    LastActivityDate = trackHashtags.Max(hashtag => hashtag.HashtaggedAt),
                 };
             };
         }
