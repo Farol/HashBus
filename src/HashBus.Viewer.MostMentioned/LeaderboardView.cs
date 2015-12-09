@@ -67,10 +67,10 @@
 
                 var lines = new List<IEnumerable<ColorToken>>();
                 foreach (var currentEntry in currentLeaderboard?.Entries ??
-                    Enumerable.Empty<TEntry>())
+                                             Enumerable.Empty<TEntry>())
                 {
                     var previousEntry = (previousLeaderboard?.Entries ??
-                            Enumerable.Empty<TEntry>())
+                                         Enumerable.Empty<TEntry>())
                         .FirstOrDefault(e => matchEntries(e, currentEntry));
 
                     var movement = previousEntry == null
@@ -89,10 +89,10 @@
 
                     if (showPercentages)
                     {
-                        tokens.Add($" ({currentEntry.Count / (double)currentLeaderboard.Count:P0})".DarkGray());
+                        tokens.Add($" ({currentEntry.Count/(double) currentLeaderboard.Count:P0})".DarkGray());
                     }
 
-                    var maxWidth = Console.WindowWidth - (horizontalPadding * 2);
+                    var maxWidth = Console.WindowWidth - (horizontalPadding*2);
                     tokens.Add(new string(' ', Math.Max(0, maxWidth - tokens.Sum(token => token.Text.Length))));
 
                     lines.Add(tokens.Trim(maxWidth).Select(token => token.On(movementBackgroundColors[movement])));
@@ -121,24 +121,25 @@
                 ColorConsole.WriteLine();
                 foreach (var line in lines)
                 {
-                    ColorConsole.WriteLine(new ColorToken[] { padding }.Concat(line).ToArray());
+                    ColorConsole.WriteLine(new ColorToken[]
+                    {
+                        padding
+                    }.Concat(line).ToArray());
                 }
 
                 ColorConsole.WriteLine(
                     padding,
-                    $"Since {currentLeaderboard.Since?.ToLocalTime().ToString() ?? ("started")} to {currentLeaderboard.LastActivityDate?.ToLocalTime().ToString() ?? ("started")}".Gray());
+                    $"{currentLeaderboard.Since?.ToLocalTime().ToString() ?? ("started")} to {currentLeaderboard.LastActivityDate?.ToLocalTime().ToString() ?? ("started")}".Gray());
 
                 var maxMessageLength = 0;
                 var refreshTime = DateTime.UtcNow.AddMilliseconds(refreshInterval);
                 using (var timer = new Timer(c =>
                 {
-                    var timeLeft = new TimeSpan(0, 0, 0, (int)Math.Round((refreshTime - DateTime.UtcNow).TotalSeconds));
-                    var message = $"\rTotal {itemsName}:"+
-                    " " +
-                    $"{currentLeaderboard?.Count ?? 0:N0}"+
-                    $" · Refreshing in {timeLeft.Humanize()}...";
-                maxMessageLength = Math.Max(maxMessageLength, message.Length);
-                    ColorConsole.Write(message.PadRight(maxMessageLength).DarkGray());
+                    var timeLeft = new TimeSpan(0, 0, 0, (int) Math.Round((refreshTime - DateTime.UtcNow).TotalSeconds));
+                    var totalMessage = $"Total {itemsName}: {currentLeaderboard?.Count ?? 0:N0}"; 
+                    var refreshingMessage = $" · Refreshing in {timeLeft.Humanize()}...";
+                    maxMessageLength = Math.Max(maxMessageLength, totalMessage.Length + refreshingMessage.Length);
+                    ColorConsole.Write("\r", padding, totalMessage.Color(currentLeaderboard?.Count - previousLeaderboard?.Count > 0 ? movementColors[-1] : movementColors[0]), refreshingMessage.PadRight(maxMessageLength).DarkGray());
                 }))
                 {
                     timer.Change(0, 1000);
