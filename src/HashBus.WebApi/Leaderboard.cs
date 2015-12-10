@@ -11,6 +11,6 @@ namespace HashBus.WebApi
 
         public DateTime? Since { get; set; }
 
-        public DateTime? LastActivityDate { get; set; }
+        public DateTime? LastActivityDateTime { get; set; }
     }
 }
